@@ -93,7 +93,7 @@ class Player(pg.sprite.Sprite):
     def handle_animation(self):
         if not self.charge_mode and self.charge_power > 0:
             self.attack_mode = True
-        if self.animation_mode:
+        if self.animation_mode and not self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.interval:
                 self.current_image += 1
                 if self.current_image >= len(self.current_animation):
@@ -109,6 +109,7 @@ class Player(pg.sprite.Sprite):
                 self.attack_mode = True
                 # self.image = self.attack[self.side != "right"]
 
+
         if self.attack_mode and self.charge_power > 0:
             fireball_position = self.rect.topright if self.side == "right" else self.rect.topleft
             self.fireballs.add(Fireball(fireball_position, self.side, self.charge_power))
@@ -118,8 +119,12 @@ class Player(pg.sprite.Sprite):
             self.timer = pg.time.get_ticks()
 
 
-        else:
-            self.charge_power = 0
+
+
+
+
+
+
 
     def handle_movement(self, direction, keys):
         if self.attack_mode:
@@ -212,7 +217,7 @@ class Game:
         self.screen.blit(self.player.image, self.player.rect)
         if self.player.charge_mode:
             self.screen.blit(self.player.charge_indicator, (self.player.rect.left + 120, self.player.rect.top))
-            self.player.fireballs.draw(self.screen)
+        self.player.fireballs.draw(self.screen)
         self.screen.blit(self.foreground, (0, 0))
 
         pg.display.flip()
