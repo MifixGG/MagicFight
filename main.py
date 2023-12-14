@@ -51,6 +51,30 @@ class Player(pg.sprite.Sprite):
         self.attack_interval = 500
         self.fireballs = pg.sprite.Group()
 
+        #-------------------------------------------------------------------------
+
+        self.image_2 = self.idle_animation_right_2[0]
+        self.current_image_2 = 0
+        self.current_animation_2 = self.idle_animation_right_2
+
+        self.rect_2 = self.image_2.get_rect()
+        self.rect_2.center = (1200, SCREEN_HEIGHT // 2)
+
+        self.timer_2 = pg.time.get_ticks()
+        self.interval_2 = 200
+        self.side_2 = "left"
+        self.animation_mode_2 = True
+
+        self.charge_power_2 = 0
+        self.charge_indicator_2 = pg.Surface((self.charge_power, 10))
+        self.charge_indicator_2.fill("red")
+
+        self.charge_mode_2 = False
+        self.attack_mode_2 = False
+        self.attack_interval_2 = 500
+        self.fireballs = pg.sprite.Group()
+        self.fireballs_2 = pg.sprite.Group()
+
     def load_animations(self):
         self.idle_animation_right = [load_image(f"images/fire wizard/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
                                      for i in range(1, 4)]
@@ -69,7 +93,22 @@ class Player(pg.sprite.Sprite):
 
         self.down = [load_image("images/fire wizard/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.down.append(pg.transform.flip(self.down[0], True, False))
+        #---------------------------------------------------------------------------------------------------------------------
+        self.idle_animation_right_2 = [load_image(f"images/earth monk/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+                                     for i in range(1, 4)]
+        self.idle_animation_left_2 = [pg.transform.flip(i, True, False) for i in self.idle_animation_right_2]
+        self.move_animation_right_2 = [load_image(f"images/earth monk/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+                                     for i in range(1, 5)]
+        self.move_animation_left_2 = [pg.transform.flip(i, True, False) for i in self.move_animation_right_2]
 
+        self.charge_2 = [load_image("images/earth monk/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.charge_2.append(pg.transform.flip(self.charge_2[0], True, False))
+
+        self.attack_2 = [load_image("images/earth monk/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.attack_2.append(pg.transform.flip(self.attack_2[0], True, False))
+
+        self.down_2 = [load_image("images/earth monk/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.down_2.append(pg.transform.flip(self.down_2[0], True, False))
     def update(self):
         keys = pg.key.get_pressed()
         direction = 0
@@ -79,9 +118,18 @@ class Player(pg.sprite.Sprite):
         elif keys[pg.K_d]:
             self.side = "right"
             direction = 1
+#------------------------------------------
+        keys_2 = pg.key.get_pressed()
+        direction_2 = 0
+        if keys_2[pg.K_LEFT]:
+            self.side_2 = "left"
+            direction_2 = -1
+        elif keys_2[pg.K_RIGHT]:
+            self.side_2 = "right"
+            direction_2 = 1
 
         self.handle_attack_mode()
-        self.handle_movement(direction, keys)
+        self.handle_movement(direction, keys, direction_2, keys_2)
         self.handle_animation()
 
     def handle_attack_mode(self):
@@ -89,6 +137,15 @@ class Player(pg.sprite.Sprite):
             if pg.time.get_ticks() - self.timer > self.attack_interval:
                 self.attack_mode = False
                 self.timer = pg.time.get_ticks()
+
+
+        #------------------------------------------------------------------
+
+        if self.attack_mode_2:
+            if pg.time.get_ticks() - self.timer_2 > self.attack_interval_2:
+                self.attack_mode_2 = False
+                self.timer_2 = pg.time.get_ticks()
+
 
     def handle_animation(self):
         if not self.charge_mode and self.charge_power > 0:
@@ -121,12 +178,44 @@ class Player(pg.sprite.Sprite):
 
 
 
+        #--------------------------------------------------
+
+        if not self.charge_mode_2 and self.charge_power_2 > 0:
+            self.attack_mode_2 = True
+        if self.animation_mode_2 and not self.attack_mode_2:
+            if pg.time.get_ticks() - self.timer_2 > self.interval_2:
+                self.current_image_2 += 1
+                if self.current_image_2 >= len(self.current_animation_2):
+                    self.current_image_2 = 0
+                self.image_2 = self.current_animation_2[self.current_image_2]
+                self.timer_2 = pg.time.get_ticks()
+
+        if self.charge_mode_2:
+            self.charge_power_2 += 1
+            self.charge_indicator_2 = pg.Surface((self.charge_power_2, 10))
+            self.charge_indicator_2.fill("green")
+            if self.charge_power_2 >= INDICATOR_END:
+                self.attack_mode_2 = True
+                # self.image = self.attack[self.side != "right"]
+
+
+        if self.attack_mode_2 and self.charge_power_2 > 0:
+            fireball_position_2 = self.rect_2.topright if self.side_2 == "right" else self.rect_2.topleft
+            self.fireballs_2.add(Fireball(fireball_position_2, self.side_2, self.charge_power_2))
+            self.charge_power_2 = 0
+            self.charge_mode_2 = False
+            self.image_2 = self.attack_2[self.side_2 != "right"]
+            self.timer_2 = pg.time.get_ticks()
 
 
 
 
 
-    def handle_movement(self, direction, keys):
+
+
+
+
+    def handle_movement(self, direction, keys, direction_2, keys_2):
         if self.attack_mode:
             return
         self.charge_mode = 0
@@ -149,26 +238,78 @@ class Player(pg.sprite.Sprite):
 
 
 
+
+
+
+
         else:
 
             self.animation_mode = True
             self.charge_mode = False
             self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
 
+        #-------------------------------------------------------------------
 
+        if self.attack_mode_2:
+            return
+        self.charge_mode_2 = 0
+        if direction_2 != 0:
+
+            self.animation_mode_2 = True
+            self.charge_mode_2 = False
+            self.rect_2.x += direction_2
+            self.current_animation_2 = self.move_animation_left_2 if direction == -1 else self.move_animation_right_2
+        elif keys_2[pg.K_m]:
+            self.animation_mode_2 = False
+            self.image_2 = self.charge_2[self.side_2 != "right"]
+            self.charge_mode_2 = True
+
+
+
+        elif keys_2[pg.K_DOWN]:
+            self.animation_mode_2 = False
+            self.image_2 = self.down_2[self.side_2 != "right"]
+
+
+
+
+
+
+
+        else:
+
+            self.animation_mode_2 = True
+            self.charge_mode_2 = False
+            self.current_animation_2 = self.idle_animation_left_2 if self.side_2 == "left" else self.idle_animation_right_2
 class Fireball(pg.sprite.Sprite):
     def __init__(self, coord, side, power):
         super().__init__()
         self.side = side
         self.power = power
 
-        self.image = load_image("images/fire wizard/magicball.png", 200, 150)
+        self.image = load_image("images/fire wizard/magicball.png", (200 + power), (150 + power))
         if self.side == "right":
             self.image = pg.transform.flip(self.image, True, False)
 
         self.rect = self.image.get_rect()
 
         self.rect.center = coord[0], coord[1] + 120
+
+
+
+        #-----------------------------------
+
+
+        self.side_2 = side
+        self.power_2 = power
+
+        self.image_2 = load_image("images/earth monk/magicball.png", (200 + power), (150 + power))
+        if self.side_2 == "right":
+            self.image_2 = pg.transform.flip(self.image_2, True, False)
+
+        self.rect_2 = self.image_2.get_rect()
+
+        self.rect_2.center = coord[0], coord[1] + 120
 
     def update(self):
         if self.side == "right":
@@ -178,6 +319,19 @@ class Fireball(pg.sprite.Sprite):
         else:
             self.rect.x -= 4
             if self.rect.right <= 0:
+                self.kill()
+
+
+
+        #-------------------------------------------------
+
+        if self.side_2 == "right":
+            self.rect_2.x += 4
+            if self.rect_2.left >= SCREEN_WIDTH:
+                self.kill()
+        else:
+            self.rect_2.x -= 4
+            if self.rect_2.right <= 0:
                 self.kill()
 
 
@@ -210,14 +364,19 @@ class Game:
     def update(self):
         self.player.update()
         self.player.fireballs.update()
+        self.player.fireballs_2.update()
 
     def draw(self):
         # Отрисовка интерфейса
         self.screen.blit(self.background, (0, 0))
         self.screen.blit(self.player.image, self.player.rect)
+        self.screen.blit(self.player.image_2, self.player.rect_2)
         if self.player.charge_mode:
             self.screen.blit(self.player.charge_indicator, (self.player.rect.left + 120, self.player.rect.top))
+        if self.player.charge_mode_2:
+            self.screen.blit(self.player.charge_indicator_2, (self.player.rect_2.left + 120, self.player.rect_2.top))
         self.player.fireballs.draw(self.screen)
+        self.player.fireballs_2.draw(self.screen)
         self.screen.blit(self.foreground, (0, 0))
 
         pg.display.flip()
