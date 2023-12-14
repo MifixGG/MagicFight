@@ -149,6 +149,7 @@ class Player(pg.sprite.Sprite):
 
     def handle_animation(self):
         if not self.charge_mode and self.charge_power > 0:
+            self.timer = pg.time.get_ticks()
             self.attack_mode = True
         if self.animation_mode and not self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.interval:
@@ -181,6 +182,7 @@ class Player(pg.sprite.Sprite):
         #--------------------------------------------------
 
         if not self.charge_mode_2 and self.charge_power_2 > 0:
+            self.timer_2 = pg.time.get_ticks()
             self.attack_mode_2 = True
         if self.animation_mode_2 and not self.attack_mode_2:
             if pg.time.get_ticks() - self.timer_2 > self.interval_2:
@@ -258,7 +260,7 @@ class Player(pg.sprite.Sprite):
             self.animation_mode_2 = True
             self.charge_mode_2 = False
             self.rect_2.x += direction_2
-            self.current_animation_2 = self.move_animation_left_2 if direction == -1 else self.move_animation_right_2
+            self.current_animation_2 = self.move_animation_left_2 if direction_2 == -1 else self.move_animation_right_2
         elif keys_2[pg.K_m]:
             self.animation_mode_2 = False
             self.image_2 = self.charge_2[self.side_2 != "right"]
