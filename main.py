@@ -48,7 +48,7 @@ class Player(pg.sprite.Sprite):
 
         self.charge_mode = False
         self.attack_mode = False
-        self.attack_interval = 500
+        self.attack_interval = 400
         self.fireballs = pg.sprite.Group()
 
         #-------------------------------------------------------------------------
@@ -66,12 +66,18 @@ class Player(pg.sprite.Sprite):
         self.animation_mode_2 = True
 
         self.charge_power_2 = 0
+        self.hp = 300
+        self.hp_2 = 300
         self.charge_indicator_2 = pg.Surface((self.charge_power, 10))
         self.charge_indicator_2.fill("red")
+        self.hp_indicator = pg.Surface((self.hp, 10))
+        self.hp_indicator.fill("green")
+        self.hp_indicator_2 = pg.Surface((self.hp_2, 10))
+        self.hp_indicator_2.fill("red")
 
         self.charge_mode_2 = False
         self.attack_mode_2 = False
-        self.attack_interval_2 = 500
+        self.attack_interval_2 = 400
         self.fireballs = pg.sprite.Group()
         self.fireballs_2 = pg.sprite.Group()
 
@@ -118,6 +124,7 @@ class Player(pg.sprite.Sprite):
         elif keys[pg.K_d]:
             self.side = "right"
             direction = 1
+
 #------------------------------------------
         keys_2 = pg.key.get_pressed()
         direction_2 = 0
@@ -134,6 +141,7 @@ class Player(pg.sprite.Sprite):
 
     def handle_attack_mode(self):
         if self.attack_mode:
+
             if pg.time.get_ticks() - self.timer > self.attack_interval:
                 self.attack_mode = False
                 self.timer = pg.time.get_ticks()
@@ -142,6 +150,7 @@ class Player(pg.sprite.Sprite):
         #------------------------------------------------------------------
 
         if self.attack_mode_2:
+
             if pg.time.get_ticks() - self.timer_2 > self.attack_interval_2:
                 self.attack_mode_2 = False
                 self.timer_2 = pg.time.get_ticks()
@@ -149,7 +158,7 @@ class Player(pg.sprite.Sprite):
 
     def handle_animation(self):
         if not self.charge_mode and self.charge_power > 0:
-            self.timer = pg.time.get_ticks()
+            # self.timer = pg.time.get_ticks()
             self.attack_mode = True
         if self.animation_mode and not self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.interval:
@@ -170,7 +179,7 @@ class Player(pg.sprite.Sprite):
 
         if self.attack_mode and self.charge_power > 0:
             fireball_position = self.rect.topright if self.side == "right" else self.rect.topleft
-            self.fireballs.add(Fireball(fireball_position, self.side, self.charge_power))
+            self.fireballs.add(Fireball(fireball_position, self.side, self.charge_power, self.hp, self.hp_2))
             self.charge_power = 0
             self.charge_mode = False
             self.image = self.attack[self.side != "right"]
@@ -182,7 +191,7 @@ class Player(pg.sprite.Sprite):
         #--------------------------------------------------
 
         if not self.charge_mode_2 and self.charge_power_2 > 0:
-            self.timer_2 = pg.time.get_ticks()
+            # self.timer_2 = pg.time.get_ticks()
             self.attack_mode_2 = True
         if self.animation_mode_2 and not self.attack_mode_2:
             if pg.time.get_ticks() - self.timer_2 > self.interval_2:
@@ -203,7 +212,7 @@ class Player(pg.sprite.Sprite):
 
         if self.attack_mode_2 and self.charge_power_2 > 0:
             fireball_position_2 = self.rect_2.topright if self.side_2 == "right" else self.rect_2.topleft
-            self.fireballs_2.add(Fireball(fireball_position_2, self.side_2, self.charge_power_2))
+            self.fireballs_2.add(Fireball(fireball_position_2, self.side_2, self.charge_power_2, self.hp, self.hp_2))
             self.charge_power_2 = 0
             self.charge_mode_2 = False
             self.image_2 = self.attack_2[self.side_2 != "right"]
@@ -284,8 +293,10 @@ class Player(pg.sprite.Sprite):
             self.charge_mode_2 = False
             self.current_animation_2 = self.idle_animation_left_2 if self.side_2 == "left" else self.idle_animation_right_2
 class Fireball(pg.sprite.Sprite):
-    def __init__(self, coord, side, power):
+    def __init__(self, coord, side, power, hp, hp_2):
         super().__init__()
+        self.hp_indicator = hp
+        self.hp_indicator_2 = hp_2
         self.side = side
         self.power = power
 
@@ -323,6 +334,9 @@ class Fireball(pg.sprite.Sprite):
             if self.rect.right <= 0:
                 self.kill()
 
+        if self.rect.x == self.image_2:
+            self.hp -= self.power
+
 
 
         #-------------------------------------------------
@@ -335,6 +349,11 @@ class Fireball(pg.sprite.Sprite):
             self.rect_2.x -= 4
             if self.rect_2.right <= 0:
                 self.kill()
+
+        if self.rect_2.x == self.image:
+            self.hp -= self.power_2
+
+
 
 
 class Game:
@@ -368,6 +387,7 @@ class Game:
         self.player.fireballs.update()
         self.player.fireballs_2.update()
 
+
     def draw(self):
         # Отрисовка интерфейса
         self.screen.blit(self.background, (0, 0))
@@ -377,9 +397,15 @@ class Game:
             self.screen.blit(self.player.charge_indicator, (self.player.rect.left + 120, self.player.rect.top))
         if self.player.charge_mode_2:
             self.screen.blit(self.player.charge_indicator_2, (self.player.rect_2.left + 120, self.player.rect_2.top))
+
         self.player.fireballs.draw(self.screen)
         self.player.fireballs_2.draw(self.screen)
         self.screen.blit(self.foreground, (0, 0))
+
+        self.screen.blit(self.player.hp_indicator, (self.player.rect.left + 75, self.player.rect.bottom))
+
+        self.screen.blit(self.player.hp_indicator_2, (self.player.rect_2.left + 75, self.player.rect_2.bottom))
+
 
         pg.display.flip()
 
