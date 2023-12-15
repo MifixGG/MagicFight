@@ -1,6 +1,6 @@
 import pygame as pg
 
-pg.init()
+
 
 SCREEN_WIDTH = 1300
 SCREEN_HEIGHT = 750
@@ -11,19 +11,15 @@ INDICATOR_END = 300
 
 FPS = 144
 
-font = pg.font.Font(None, 40)
+# font = pg.font.Font(None, 40)
 
 
 def load_image(file, width, height):
     image = pg.image.load(file).convert_alpha()
     image = pg.transform.scale(image, (width, height))
     return image
-
-
-def text_render(text):
-    return font.render(str(text), True, "black")
-
-
+# def text_render(text):
+#     return font.render(str(text), True, "black")
 class Player(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -135,6 +131,9 @@ class Player(pg.sprite.Sprite):
             self.side_2 = "right"
             direction_2 = 1
 
+
+
+
         self.handle_attack_mode()
         self.handle_movement(direction, keys, direction_2, keys_2)
         self.handle_animation()
@@ -236,7 +235,7 @@ class Player(pg.sprite.Sprite):
             self.charge_mode = False
             self.rect.x += direction
             self.current_animation = self.move_animation_left if direction == -1 else self.move_animation_right
-        elif keys[pg.K_SPACE]:
+        elif (keys[pg.K_SPACE]):
             self.animation_mode = False
             self.image = self.charge[self.side != "right"]
             self.charge_mode = True
@@ -270,7 +269,7 @@ class Player(pg.sprite.Sprite):
             self.charge_mode_2 = False
             self.rect_2.x += direction_2
             self.current_animation_2 = self.move_animation_left_2 if direction_2 == -1 else self.move_animation_right_2
-        elif keys_2[pg.K_m]:
+        elif keys_2[pg.K_UP]:
             self.animation_mode_2 = False
             self.image_2 = self.charge_2[self.side_2 != "right"]
             self.charge_mode_2 = True
@@ -324,6 +323,8 @@ class Fireball(pg.sprite.Sprite):
 
         self.rect_2.center = coord[0], coord[1] + 120
 
+
+
     def update(self):
         if self.side == "right":
             self.rect.x += 4
@@ -334,8 +335,7 @@ class Fireball(pg.sprite.Sprite):
             if self.rect.right <= 0:
                 self.kill()
 
-        if self.rect.x == self.image_2:
-            self.hp -= self.power
+
 
 
 
@@ -349,13 +349,6 @@ class Fireball(pg.sprite.Sprite):
             self.rect_2.x -= 4
             if self.rect_2.right <= 0:
                 self.kill()
-
-        if self.rect_2.x == self.image:
-            self.hp -= self.power_2
-
-
-
-
 class Game:
     def __init__(self):
 
@@ -370,6 +363,9 @@ class Game:
         self.clock = pg.time.Clock()
         self.run()
 
+
+
+
     def run(self):
         while True:
             self.event()
@@ -381,6 +377,8 @@ class Game:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 quit()
+
+
 
     def update(self):
         self.player.update()
@@ -405,6 +403,9 @@ class Game:
         self.screen.blit(self.player.hp_indicator, (self.player.rect.left + 75, self.player.rect.bottom))
 
         self.screen.blit(self.player.hp_indicator_2, (self.player.rect_2.left + 75, self.player.rect_2.bottom))
+
+
+
 
 
         pg.display.flip()
