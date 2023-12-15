@@ -1,5 +1,5 @@
 import pygame as pg
-
+#Игра
 
 
 SCREEN_WIDTH = 1300
